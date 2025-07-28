@@ -47,7 +47,10 @@ const AdminSidebar = () => {
               </Link>
             </li>
             <li>
-              <Link to="/admin/assign-task" className="menu-item">
+              <Link
+                to="/admin/assign-task"
+                className="flex items-center gap-3 p-3 rounded-md hover:bg-blue-100"
+              >
                 <FaTasks className="mr-2" />
                 Assign Work
               </Link>
