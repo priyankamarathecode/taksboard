@@ -84,6 +84,7 @@ const AssignTaskPage = () => {
   };
 
   const filteredUsers = users.filter((user) => {
+    if (user.role !== "user") return false;
     const keyword = searchTerm.toLowerCase();
     return (
       user.name.toLowerCase().includes(keyword) ||
@@ -307,11 +308,13 @@ const AssignTaskPage = () => {
                     className="w-full border px-4 py-2 rounded-lg border-gray-300 shadow-sm cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-400"
                   >
                     <option value="">Select User</option>
-                    {users.map((user) => (
-                      <option key={user._id} value={user._id}>
-                        {user.name} ({user.role})
-                      </option>
-                    ))}
+                    {users
+                      .filter((user) => user.role === "user")
+                      .map((user) => (
+                        <option key={user._id} value={user._id}>
+                          {user.name} ({user.role})
+                        </option>
+                      ))}
                   </select>
                 </div>
                 <div>

@@ -3,23 +3,20 @@ const mongoose = require("mongoose");
 const taskSchema = new mongoose.Schema(
   {
     title: { type: String, required: true },
-    description: String,
-    assignedTo: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
-    status: {
-      type: String,
-      enum: ["Pending", "In Progress", "Completed"],
-      default: "Pending",
-    },
-    deadline: {
-      type: Date,
+    description: { type: String },
+    assignedTo: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
       required: true,
     },
-
-    createdBy: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+    deadline: { type: Date },
+    status: {
+      type: String,
+      enum: ["Pending", "In Progress", "Complete"],
+      default: "Pending",
+    },
   },
-  {
-    timestamps: true,
-  }
+  { timestamps: true }
 );
 
 module.exports = mongoose.model("Task", taskSchema);

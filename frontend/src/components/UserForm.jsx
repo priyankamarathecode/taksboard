@@ -6,7 +6,7 @@ const UserForm = ({ selectedUser, onSuccess, onCancel }) => {
     name: "",
     email: "",
     password: "",
-    role: "Manager",
+    role: "user",
   });
 
   useEffect(() => {
@@ -22,7 +22,7 @@ const UserForm = ({ selectedUser, onSuccess, onCancel }) => {
         name: "",
         email: "",
         password: "",
-        role: "Manager",
+        role: "user",
       });
     }
   }, [selectedUser]);
@@ -100,8 +100,8 @@ const UserForm = ({ selectedUser, onSuccess, onCancel }) => {
             onChange={handleChange}
             className="w-full px-4 py-2 rounded border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
           >
-            <option value="Manager">Manager</option>
-            <option value="Employee">Employee</option>
+            <option value="admin">Admin</option>
+            <option value="user">User</option>
           </select>
         </div>
 

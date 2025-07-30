@@ -1,96 +1,86 @@
-// controllers/userController.js
-const Task = require("../models/Task");
 const User = require("../models/User");
-const bcrypt = require("bcryptjs");
 
-exports.createUser = async (req, res) => {
-  const { name, email, password, role } = req.body;
-
-  console.log("BODY:", req.body);
-  console.log("REQ.USER:", req.user);
-
+// ✅ Create new user
+// ✅ Create new user
+const createUser = async (req, res) => {
   try {
-    const existing = await User.findOne({ email });
-    if (existing) {
-      return res.status(400).json({ message: "Email already exists" });
+    const { name, email, password, role } = req.body;
+
+    if (!name || !email || !password || !role) {
+      return res.status(400).json({ message: "All fields are required" });
     }
 
-    const hash = await bcrypt.hash(password, 10);
+    const existing = await User.findOne({ email });
+    if (existing) {
+      return res.status(400).json({ message: "Email already in use" });
+    }
 
-    const user = await User.create({
-      name,
-      email,
-      password: hash,
-      role,
-      createdBy: req.user.id, // this must be valid
-    });
+    const user = new User({ name, email, password, role });
+    await user.save();
 
-    const { password: _, ...userData } = user.toObject();
-    res.status(201).json(userData);
+    res.status(201).json({ message: "User created successfully", user });
   } catch (err) {
-    console.error("USER CREATION ERROR:", err.message);
-    res
-      .status(500)
-      .json({ message: "User creation failed", error: err.message });
+    console.error("User creation error:", err.message, err.errors); // ← ✅ Add this line
+    res.status(500).json({ message: "Server Error", error: err.message });
   }
 };
 
-exports.getUsers = async (req, res) => {
+// ✅ Get all users (only with 'user' role)
+/* const getUsers = async (req, res) => {
   try {
-    const users = await User.find({ role: { $in: ["Manager", "Employee"] } })
-      .select("-password")
-      .populate("createdBy", "email role");
-
-    const usersWithTasks = await Promise.all(
-      users.map(async (user) => {
-        const tasks = await Task.find({ assignedTo: user._id });
-        return {
-          ...user.toObject(),
-          tasks,
-        };
-      })
-    );
-
-    res.json(usersWithTasks);
+    const users = await User.find().select("-password");
+    res.json(users);
   } catch (err) {
-    res
-      .status(500)
-      .json({ message: "Failed to fetch users", error: err.message });
+    res.status(500).json({ message: "Server error" });
+  }
+}; */
+
+const getUsers = async (req, res) => {
+  try {
+    const users = await User.find({ role: "user" })
+      .select("-password")
+      .populate("tasks"); // ✅ important
+    res.json(users);
+  } catch (err) {
+    res.status(500).json({ message: "Server error" });
   }
 };
 
-exports.updateUser = async (req, res) => {
+// ✅ Update user
+const updateUser = async (req, res) => {
   try {
     const { name, password, role } = req.body;
+
+    if (!["admin", "user"].includes(role)) {
+      return res.status(400).json({ message: "Invalid role" });
+    }
+
     const updateData = { name, role };
 
     if (password) {
       updateData.password = await bcrypt.hash(password, 10);
     }
 
-    const updatedUser = await User.findByIdAndUpdate(
-      req.params.id,
-      updateData,
-      {
-        new: true,
-      }
-    );
-
-    if (!updatedUser) return res.status(404).json({ error: "User not found" });
-
-    res.json(updatedUser);
+    await User.findByIdAndUpdate(req.params.id, updateData);
+    res.json({ message: "User updated successfully" });
   } catch (err) {
-    res.status(500).json({ error: "Failed to update user" });
+    res.status(500).json({ message: "Server error" });
   }
 };
 
-exports.deleteUser = async (req, res) => {
+// ✅ Delete user
+const deleteUser = async (req, res) => {
   try {
-    const user = await User.findByIdAndDelete(req.params.id);
-    if (!user) return res.status(404).json({ message: "User not found" });
-
-    res.json({ message: "User deleted" });
+    await User.findByIdAndDelete(req.params.id);
+    res.json({ message: "User deleted successfully" });
   } catch (err) {
-    res.status(500).json({ message: "Delete failed", error: err.message });
+    res.status(500).json({ message: "Server error" });
   }
+};
+
+module.exports = {
+  createUser,
+  getUsers,
+  updateUser,
+  deleteUser,
 };

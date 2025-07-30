@@ -1,28 +1,22 @@
 const Task = require("../models/Task");
 const User = require("../models/User");
 
+// Assign Task
 exports.assignTask = async (req, res) => {
+  const { title, description, assignedTo, deadline } = req.body;
   try {
-    const { title, description, assignedTo, deadline } = req.body;
+    const task = new Task({ title, description, assignedTo, deadline });
+    await task.save();
 
-    if (!title || !description || !assignedTo || !deadline) {
-      return res.status(400).json({ error: "All fields are required" });
-    }
-
-    const task = await Task.create({
-      title,
-      description,
-      assignedTo,
-      deadline,
+    // Add to user's tasks array
+    await User.findByIdAndUpdate(assignedTo, {
+      $push: { tasks: task._id },
     });
 
-    // Also add task ID to user's task array
-    await User.findByIdAndUpdate(assignedTo, { $push: { tasks: task._id } });
-
-    res.status(201).json({ message: "Task assigned successfully", task });
-  } catch (error) {
-    console.error("Assign task error:", error.message);
-    res.status(500).json({ error: "Failed to assign task" });
+    res.status(201).json(task);
+  } catch (err) {
+    console.error("Assign Task Error:", err.message);
+    res.status(500).json({ message: "Task creation failed" });
   }
 };
 
@@ -30,15 +24,29 @@ exports.assignTask = async (req, res) => {
 exports.updateTask = async (req, res) => {
   try {
     const { title, description, assignedTo, deadline } = req.body;
+    const taskId = req.params.id;
 
     const updatedTask = await Task.findByIdAndUpdate(
-      req.params.id,
+      taskId,
       { title, description, assignedTo, deadline },
       { new: true }
     );
 
+    if (!updatedTask) {
+      return res.status(404).json({ error: "Task not found" });
+    }
+
+    // Remove task from all users
+    await User.updateMany({ tasks: taskId }, { $pull: { tasks: taskId } });
+
+    // Add task to new assigned user
+    await User.findByIdAndUpdate(assignedTo, {
+      $addToSet: { tasks: taskId },
+    });
+
     res.json({ message: "Task updated", updatedTask });
   } catch (err) {
+    console.error("Update Task Error:", err.message);
     res.status(500).json({ error: "Failed to update task" });
   }
 };
@@ -46,9 +54,12 @@ exports.updateTask = async (req, res) => {
 // Delete Task
 exports.deleteTask = async (req, res) => {
   try {
-    const task = await Task.findById(req.params.taskId); // ✅ Correct param
+    const taskId = req.params.taskId;
+
+    const task = await Task.findById(taskId);
     if (!task) return res.status(404).json({ error: "Task not found" });
 
+    // Remove from user's task list
     await User.findByIdAndUpdate(task.assignedTo, {
       $pull: { tasks: task._id },
     });
@@ -57,17 +68,18 @@ exports.deleteTask = async (req, res) => {
 
     res.json({ message: "Task deleted" });
   } catch (err) {
-    console.error("Delete Task Error:", err);
+    console.error("Delete Task Error:", err.message);
     res.status(500).json({ error: "Failed to delete task" });
   }
 };
 
+// Get My Tasks (for logged-in user)
 exports.getMyTasks = async (req, res) => {
   try {
     const tasks = await Task.find({ assignedTo: req.user._id });
     res.json(tasks);
-  } catch (error) {
-    console.error("Error fetching tasks:", error.message);
+  } catch (err) {
+    console.error("Get My Tasks Error:", err.message);
     res.status(500).json({ message: "Failed to fetch tasks" });
   }
 };

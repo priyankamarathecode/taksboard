@@ -5,8 +5,6 @@ import API from "../services/api";
 const AdminDashboard = () => {
   const [data, setData] = useState({
     totalUsers: 0,
-    totalManagers: 0,
-    totalEmployees: 0,
     totalTasks: 0,
     completedTasks: 0,
     pendingTasks: 0,
@@ -32,21 +30,11 @@ const AdminDashboard = () => {
   return (
     <div className="p-6">
       <h1 className="text-2xl font-bold mb-6">Admin Dashboard</h1>
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
         <DashboardCard
           title="Total Users"
           value={data.totalUsers}
           color="bg-blue-100"
-        />
-        <DashboardCard
-          title="Total Managers"
-          value={data.totalManagers}
-          color="bg-indigo-100"
-        />
-        <DashboardCard
-          title="Total Employees"
-          value={data.totalEmployees}
-          color="bg-pink-100"
         />
         <DashboardCard
           title="Total Tasks"
