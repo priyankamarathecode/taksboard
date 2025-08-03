@@ -12,6 +12,11 @@ import UsersPage from "./pages/admin/UsersPage";
 import Unauthorized from "./pages/Unauthorized";
 import AdminDashboard from "./pages/AdminDashboard";
 import AssignTaskPage from "./pages/admin/AssignTaskPage";
+import UserDashboard from "./pages/user/UserDashboard";
+import MyTasks from "./pages/user/MyTasks";
+import TaskDetails from "./pages/user/TaskDetails";
+import UserProfile from "./pages/user/UserProfile";
+import UserLayout from "./pages/user/UserLayout";
 
 function App() {
   return (
@@ -52,8 +57,21 @@ function App() {
           <Route path="users" element={<UsersPage />} />
           <Route path="assign-task" element={<AssignTaskPage />} />
         </Route>
-
-        <Route path="/unauthorized" element={<Unauthorized />} />
+        {/* User Routes */}
+        <Route
+          path="/user"
+          element={
+            <ProtectedRoute role="user">
+              <UserLayout />
+            </ProtectedRoute>
+          }
+        >
+          <Route path="dashboard" element={<UserDashboard />} />
+          <Route path="tasks" element={<MyTasks />} />
+          <Route path="task/:id" element={<TaskDetails />} />
+          <Route path="profile" element={<UserProfile />} />
+        </Route>
+        {/* <Route path="/unauthorized" element={<Unauthorized />} /> */}
         <Route path="*" element={<Login />} />
       </Routes>
     </BrowserRouter>
