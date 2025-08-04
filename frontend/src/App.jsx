@@ -17,6 +17,8 @@ import MyTasks from "./pages/user/MyTasks";
 import TaskDetails from "./pages/user/TaskDetails";
 import UserProfile from "./pages/user/UserProfile";
 import UserLayout from "./pages/user/UserLayout";
+import ForgotPassword from "./pages/ForgotPassword";
+import ResetPassword from "./pages/ResetPassword";
 
 function App() {
   return (
@@ -73,6 +75,8 @@ function App() {
         </Route>
         {/* <Route path="/unauthorized" element={<Unauthorized />} /> */}
         <Route path="*" element={<Login />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="/reset-password/:token" element={<ResetPassword />} />
       </Routes>
     </BrowserRouter>
   );

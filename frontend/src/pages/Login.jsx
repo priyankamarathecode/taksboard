@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 
 function Login() {
@@ -117,13 +117,7 @@ function Login() {
           </button>
 
           <p className="text-center text-sm text-gray-600 mt-4">
-            Forgot your password?{" "}
-            <a
-              href="/forgot-password"
-              className="text-blue-600 hover:underline"
-            >
-              Reset it
-            </a>
+            <Link to="/forgot-password"> Forgot Your Password</Link>
           </p>
         </div>
       </div>

@@ -83,3 +83,27 @@ exports.getMyTasks = async (req, res) => {
     res.status(500).json({ message: "Failed to fetch tasks" });
   }
 };
+
+// PUT /api/tasks/:id
+exports.updateTask = async (req, res) => {
+  const { id } = req.params;
+  const { status, title, description, deadline } = req.body;
+
+  try {
+    const task = await Task.findById(id);
+    if (!task) {
+      return res.status(404).json({ message: "Task not found" });
+    }
+
+    if (status) task.status = status;
+    if (title) task.title = title;
+    if (description) task.description = description;
+    if (deadline) task.deadline = deadline;
+
+    await task.save();
+    res.json({ message: "Task updated successfully", task });
+  } catch (error) {
+    console.error("Update error:", error);
+    res.status(500).json({ message: "Error updating task" });
+  }
+};

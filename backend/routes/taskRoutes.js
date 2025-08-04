@@ -15,9 +15,11 @@ router.post("/assign", authMiddleware, assignTask);
 router.get("/my-tasks", authMiddleware, getMyTasks);
 
 // ✅ Route to update task
-router.put("/:id", updateTask);
+// router.put("/:id", updateTask);
 
 // ✅ Route to delete task
 router.delete("/:taskId", deleteTask);
+
+router.put("/:id", authMiddleware, updateTask);
 
 module.exports = router;
