@@ -74,9 +74,28 @@ exports.deleteTask = async (req, res) => {
 };
 
 // Get My Tasks (for logged-in user)
-exports.getMyTasks = async (req, res) => {
+/* exports.getMyTasks = async (req, res) => {
   try {
     const tasks = await Task.find({ assignedTo: req.user._id });
+    res.json(tasks);
+  } catch (err) {
+    console.error("Get My Tasks Error:", err.message);
+    res.status(500).json({ message: "Failed to fetch tasks" });
+  }
+}; */
+
+exports.getMyTasks = async (req, res) => {
+  try {
+    const tasks = await Task.find({ assignedTo: req.user._id }).lean();
+
+    // Prepend BACKEND_URL if attachment exists and is not already a full URL
+    const backendUrl = process.env.BACKEND_URL || "http://localhost:5000";
+    tasks.forEach((task) => {
+      if (task.attachment && !task.attachment.startsWith("http")) {
+        task.attachment = `${backendUrl}${task.attachment}`;
+      }
+    });
+
     res.json(tasks);
   } catch (err) {
     console.error("Get My Tasks Error:", err.message);
@@ -105,5 +124,35 @@ exports.updateTask = async (req, res) => {
   } catch (error) {
     console.error("Update error:", error);
     res.status(500).json({ message: "Error updating task" });
+  }
+};
+
+exports.uploadAttachment = async (req, res) => {
+  try {
+    const taskId = req.params.taskId;
+    console.log("UPLOAD HIT for task:", taskId);
+
+    if (!req.file) {
+      return res.status(400).json({ message: "No file uploaded" });
+    }
+
+    const filePath = `${
+      process.env.BACKEND_URL || "http://localhost:5000"
+    }/uploads/${req.file.filename}`;
+
+    const updatedTask = await Task.findByIdAndUpdate(
+      taskId,
+      { attachment: filePath },
+      { new: true }
+    );
+
+    if (!updatedTask) {
+      return res.status(404).json({ message: "Task not found" });
+    }
+
+    res.json({ message: "Attachment uploaded", task: updatedTask });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Server error" });
   }
 };

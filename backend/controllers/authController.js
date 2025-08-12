@@ -1,11 +1,9 @@
-// backend/controllers/authController.js
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const User = require("../models/User");
 const nodemailer = require("nodemailer");
 
-// Example login controller
-// Example login controller
+// Login Controller
 exports.login = async (req, res) => {
   const { email, password } = req.body;
 
@@ -29,12 +27,12 @@ exports.login = async (req, res) => {
       _id: user._id,
       name: user.name,
       email: user.email,
-      role: user.role, // ✅ Important!
+      role: user.role,
     },
   });
 };
 
-// POST /api/auth/forgot-password
+// Forgot Password Controller
 exports.forgotPassword = async (req, res) => {
   const { email } = req.body;
   if (!email) return res.status(400).json({ message: "Email is required" });
@@ -49,16 +47,15 @@ exports.forgotPassword = async (req, res) => {
   const resetLink = `http://localhost:5173/reset-password/${token}`;
 
   const transporter = nodemailer.createTransport({
-    host: "smtp.hostinger.com", // Use your SMTP provider
+    host: "smtp.hostinger.com",
     port: 465,
     secure: true,
     auth: {
       user: process.env.MAIL_USER,
       pass: process.env.MAIL_PASS,
     },
-    secure: true,
     tls: {
-      rejectUnauthorized: false, // Disable SSL verification (use cautiously, see notes below)
+      rejectUnauthorized: false,
     },
   });
 
@@ -66,28 +63,39 @@ exports.forgotPassword = async (req, res) => {
     from: `"RoleBoard Support" <${process.env.MAIL_USER}>`,
     to: user.email,
     subject: "Reset your password",
-    html: `<p>Click below link to reset password:</p><a href="${resetLink}">${resetLink}</a>`,
+    html: `<p>Click below to reset your password:</p><a href="${resetLink}">${resetLink}</a>`,
   });
 
-  res.json({ message: "Reset link sent to email" });
+  res.json({ message: "Reset link sent to your email." });
 };
 
-// POST /api/auth/reset-password/:token
+// Reset Password Controller
 exports.resetPassword = async (req, res) => {
   const { token } = req.params;
-  const { password } = req.body;
+  const { newPassword } = req.body;
+
+  console.log("🔐 Reset Password Triggered");
+  console.log("Received Token:", token);
+  console.log("New Password:", newPassword);
 
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    const user = await User.findById(decoded.id);
-    if (!user) return res.status(404).json({ message: "User not found" });
+    console.log("✅ Token Decoded:", decoded);
 
-    const salt = await bcrypt.genSalt(10);
-    user.password = await bcrypt.hash(password, salt);
+    const user = await User.findById(decoded.id);
+    if (!user) {
+      console.log("❌ User not found for ID:", decoded.id);
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    console.log("👤 User Found:", user.email);
+    user.password = newPassword; // Triggers pre-save bcrypt hook
     await user.save();
 
+    console.log("✅ Password updated successfully");
     res.json({ message: "Password reset successfully" });
   } catch (err) {
+    console.error("❌ Token Verification Error:", err.message);
     res.status(400).json({ message: "Invalid or expired token" });
   }
 };

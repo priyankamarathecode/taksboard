@@ -1,12 +1,26 @@
 const express = require("express");
 const router = express.Router();
+const multer = require("multer");
+const path = require("path");
 const {
   assignTask,
   getMyTasks,
   updateTask,
   deleteTask,
+  uploadAttachment,
 } = require("../controllers/taskController");
 const authMiddleware = require("../middleware/auth");
+
+// Storage config
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, "uploads/"); // Make sure folder exists
+  },
+  filename: (req, file, cb) => {
+    cb(null, Date.now() + "-" + file.originalname.replace(/\s+/g, "_"));
+  },
+});
+const upload = multer({ storage });
 
 // ✅ Route for assigning a task
 router.post("/assign", authMiddleware, assignTask);
@@ -21,5 +35,6 @@ router.get("/my-tasks", authMiddleware, getMyTasks);
 router.delete("/:taskId", deleteTask);
 
 router.put("/:id", authMiddleware, updateTask);
+router.post("/:taskId/upload", upload.single("attachment"), uploadAttachment);
 
 module.exports = router;

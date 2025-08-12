@@ -6,10 +6,11 @@ const taskSchema = new mongoose.Schema(
     description: String,
     status: {
       type: String,
-      enum: ["To Do", "In Progress", "Complete"],
-      default: "To Do",
+      enum: ["Pending", "In Progress", "Complete"],
+      default: "Pending",
     },
     deadline: Date,
+    attachment: String, // File path
     assignedTo: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
   },
   { timestamps: true }
