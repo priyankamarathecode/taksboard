@@ -1,14 +1,1 @@
-TASKE MANAGEMENT SYSTEM PROJECT MONGODOB DETAILS
-
-CLUSTER NAME : ROLEBOARD
-
-
-Username:
-priyankamarathecode
-
-Password :
-OELCpoWtTLsmLGxm
-
-
-
-curl -4 ifconfig.me
+sample file
